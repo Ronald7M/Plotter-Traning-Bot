@@ -1,0 +1,8 @@
+version: "3.9"
+services:
+  react-app:
+    build: .
+    container_name: react-app
+    ports:
+      - "3001:80"   # accesezi pe http://localhost:3000
+    restart: always
