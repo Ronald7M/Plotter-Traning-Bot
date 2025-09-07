@@ -15,8 +15,8 @@ code {
 .chart-container {
   padding-left: 20vh;
   display: flex;
-  flex-direction: column; /* aliniază tot vertical */
-  gap: 20px; /* spațiu între checkbox, chart și tooltip */
+  flex-direction: column; 
+  gap: 20px; 
 }
 
 .checkbox-label {
@@ -27,7 +27,7 @@ code {
 
 .chart-box {
   width: 100%;
-  height: 700px; /* sau cât vrei */
+  height: 700px; 
   border: 1px solid #ccc;
 }
 
@@ -38,5 +38,5 @@ code {
   background-color: #f9f9f9;
   display: flex;
   flex-direction: column;
-  gap: 4px; /* spațiu între rândurile tooltip-ului */
+  gap: 4px; 
 }

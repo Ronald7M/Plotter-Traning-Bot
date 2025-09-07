@@ -10,43 +10,12 @@ export default function MyChart({ hoverTime, setIndicators, candleData, candels 
   const [candleSeries, setCandleSeries] = useState(null);
   const [seriesList, setSeriesList] = useState([]);
 
-  useEffect(() => {
-    if (!candleSeries || hoverTime == null) return;
-
-    candleSeries.applyOptions({
-      markers: [
-        {
-          time: hoverTime,
-          position: "aboveBar",
-          color: "red",
-          shape: "arrowUp",
-          text: "",
-        },
-      ],
-    });
-  }, [hoverTime, candleSeries]);
 
 
 
 
-  useEffect(() => {
-    if (!candleSeries || hoverTime == null) return;
 
-    // Adaugă marker programatic
-    candleSeries.applyOptions({
-      markers: [
-        {
-          time: hoverTime,       // timpul pe care vrei să-l marchezi
-          position: 'aboveBar',  // 'aboveBar', 'belowBar', 'inBar'
-          color: 'red',
-          shape: 'arrowUp',      // forme disponibile: 'arrowUp', 'arrowDown', 'circle', 'square', 'flag'
-          text: '',
-        }
-      ]
-    });
-  }, [candleSeries, hoverTime]);
-
-  // Initializare chart
+  
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -65,7 +34,7 @@ export default function MyChart({ hoverTime, setIndicators, candleData, candels 
     candle.applyOptions({ visible: candels });
 
 
-    // handler pentru crosshair
+    
     const crosshairHandler = (param) => {
       if (!param || !param.time) {
         if (onHoverTime) onHoverTime(null);
@@ -82,17 +51,17 @@ export default function MyChart({ hoverTime, setIndicators, candleData, candels 
     };
   }, []);
 
-  // Setare candleData
+ 
   useEffect(() => {
     if (chart && candleSeries && candleData?.length) {
       candleSeries.setData(candleData);
 
-      // trimite chart-ul la parent doar când are date
+      
       if (onChartReady) onChartReady(chart);
     }
   }, [chart, candleSeries, candleData]);
 
-  // Funcție generică de adăugat serie
+  
   const addSeries = ({ id, label, type = "line", color = "blue", priceScaleId = "right", calculateFn, data }) => {
     if (!chart) return;
 
@@ -132,15 +101,15 @@ export default function MyChart({ hoverTime, setIndicators, candleData, candels 
         setIndicators(prev => ({
           ...prev,
           [s.label]: {
-            data: res,        // array-ul cu valori
-            color: s.color      // orice parametru suplimentar
+            data: res,       
+            color: s.color      
           }
         }));
       }
     });
   }, [seriesList, candleData]);
 
-  // Toggle show/hide serie
+  
   const toggleSeries = (id) => {
     if (!chart) return;
 
@@ -157,7 +126,7 @@ export default function MyChart({ hoverTime, setIndicators, candleData, candels 
     );
   };
 
-  // Update seriile când candleData se schimbă
+
   useEffect(() => {
     seriesList.forEach((s) => {
       if (s.show && s.seriesInstance && s.calculateFn) {
@@ -166,7 +135,7 @@ export default function MyChart({ hoverTime, setIndicators, candleData, candels 
     });
   }, [candleData, seriesList]);
 
-  // Adăugăm indicatorii la mount
+  
   useEffect(() => {
     if (!chart) return;
 

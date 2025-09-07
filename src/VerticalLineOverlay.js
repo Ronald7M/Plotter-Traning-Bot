@@ -1,47 +1,40 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 
 export default function VerticalLineOverlay({ chart, hoverTime }) {
-    const lineRef = useRef(null);
+  const [x, setX] = useState(null);
+  const [offset,setOffset] = useState(64)
 
-    useEffect(() => {
-        if (!chart || !lineRef.current) return;
+  useEffect(() => {
+    if (!chart) return;
 
-        const updateLine = () => {
-            if (hoverTime == null) {
-                lineRef.current.style.display = "none";
-                return;
-            }
-            const x = chart.timeScale().timeToCoordinate(hoverTime);
-            if (x === undefined) {
-                lineRef.current.style.display = "none";
-                return;
-            }
+    const updateLine = () => {
+      if (hoverTime == null) {
+        setX(null);
+        return;
+      }
+      const coord = chart.timeScale().timeToCoordinate(hoverTime);
+      setX(coord ?? null);
+    };
 
-            lineRef.current.style.display = "block";
-            lineRef.current.style.left = `${x+64}px`;
-        };
+   
+    updateLine();
 
-        // actualizăm linia la fiecare mișcare a crosshair-ului
-        const unsub = chart.subscribeCrosshairMove(updateLine);
+    
+  }, [chart, hoverTime]);
 
-        // de asemenea, actualizează linia când se schimbă hoverTime
-        updateLine();
 
-        return () => chart.unsubscribeCrosshairMove(updateLine);
-    }, [chart, hoverTime]);
 
-    return (
-        <div
-            ref={lineRef}
-            style={{
-                position: "absolute",
-                top: 0,
-                width: "2px",
-                height: "100%",
-                borderLeft: "2px dashed black", // linie punctată
-                display: "none",
-                zIndex: 10,
-            }}
-        />
-    );
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: 0,
+        left: `${x + offset}px`,
+        width: "2px",
+        height: "100%",
+        borderLeft: "3px dashed black",
+        zIndex: 10,
+      }}
+    />
+  );
 }

@@ -53,7 +53,7 @@ function App() {
   useEffect(() => {
     if (!indicators || !hover) return;
 
-    // parcurgem toate cheile din indicators
+    
     const display = Object.entries(indicators).map(([name, indicator]) => {
 
       if (!indicator?.data?.length) return null;
@@ -62,7 +62,7 @@ function App() {
       return point
         ? { name, value: point.value, color: indicator.color }
         : { name, value: null, color: indicator.color };
-    }).filter(Boolean); // eliminăm eventualele null-uri
+    }).filter(Boolean); 
     setRanderIndicators(display)
   }, [indicators, hover]);
 
@@ -79,10 +79,10 @@ const handleChartReady = (chart) => {
     if (syncingFlags.get(chart)) return;
 
     try {
-      // blocăm toate charturile
+     
       chartRefs.current.forEach((c) => syncingFlags.set(c, true));
 
-      // aplicăm exact același range pe toate charturile
+      
       chartRefs.current.forEach((c) => {
         if (c !== chart) {
           c.timeScale().setVisibleRange(range);
@@ -153,17 +153,17 @@ const handleChartReady = (chart) => {
     return (
       <div
         style={{
-          position: "fixed",   // poziționare absolută
-          top: "8px",             // la 8px de sus
-          right: "8px",           // la 8px de dreapta
+          position: "fixed",   
+          top: "8px",             
+          right: "8px",          
           display: "flex",
           flexDirection: "column",
           gap: "4px",
           padding: "8px",
-          backgroundColor: "rgba(255, 255, 255, 0.8)", // fundal semi-transparent
+          backgroundColor: "rgba(255, 255, 255, 0.8)", 
           borderRadius: "6px",
           boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-          zIndex: 1000            // să fie deasupra chart-ului
+          zIndex: 1000            
         }}
       >
         {indicatorsArray.map((ind) => (
@@ -246,10 +246,10 @@ const handleChartReady = (chart) => {
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: "16px",         // spațiu între chart-uri
-          flexWrap: "wrap",    // dacă nu încape, trece pe linia următoare
-          justifyContent: "center", // centrare orizontală
-          alignItems: "flex-start", // aliniază chart-urile sus
+          gap: "16px",         
+          flexWrap: "wrap",   
+          justifyContent: "center", 
+          alignItems: "flex-start", 
         }}
       >
         <MyChart
