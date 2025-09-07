@@ -39,7 +39,7 @@ export default function VerticalLineOverlay({ chart, hoverTime,ref }) {
   if (!canvas) return 0;
 
   
-  return canvas.width;
+return canvas.getBoundingClientRect().width;
 }
 
   return (
