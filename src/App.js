@@ -270,16 +270,6 @@ const handleChartReady = (chart) => {
           SERIES={series2}
           onHoverTime={(time) => setHover(time)}
         />
-
-        <MyChart
-          hoverTime={hover}
-          setIndicators={setIndicators}
-          candleData={candles}
-          candels={false}
-          onChartReady={handleChartReady}
-          SERIES={series2}
-          onHoverTime={(time) => setHover(time)}
-        />
       </div>
       {/* <VerticalLineOnCursor color="blue" width={1} /> */}
     </div>

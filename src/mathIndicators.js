@@ -103,7 +103,7 @@ export function calculateMACD(data, fastPeriod = 5, slowPeriod = 8, signalPeriod
 
   const closes = data.map(c => parseFloat(c.value));
 
-  // Calculăm MACD
+
   const macdValues = MACD.calculate({
     values: closes,
     fastPeriod,
@@ -114,7 +114,7 @@ export function calculateMACD(data, fastPeriod = 5, slowPeriod = 8, signalPeriod
   });
 
   const result=macdValues.map((val, i) => ({
-    time: data[i + slowPeriod - 1].time, // shift pentru slow EMA
+    time: data[i + slowPeriod - 1].time, 
     value: val.histogram,
   }));
 
