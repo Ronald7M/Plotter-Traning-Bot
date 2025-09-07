@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import MyChart from "./MyChart";
 import axios from "axios";
-import { calculateEMA, calculateSMMA, calculateMACD, calculateWaveTrend, calculateRSI } from "./mathIndicators";
+import { calculateEMA, calculateSMMA, calculateMACD, calculateWaveTrend, calculateRSI, calculateRSIwithSMA } from "./mathIndicators";
 import { VerticalLineOnCursor } from "./VerticalLineOnCursor";
 
 const BYBIT_API = "https://api.bybit.com/v5/market/kline";
@@ -41,8 +41,8 @@ function App() {
 
     },
     {
-      id: "MACD",
-      label: "MACD",
+      id: "MACD-histo",
+      label: "MACD-histo",
       color: "green",
       priceScaleId: "left",
       calculateFn: (data) => calculateMACD(data.map((c) => ({ time: c.time, value: c.close }))),
@@ -70,25 +70,29 @@ function App() {
         calculateWaveTrend(data.map((c) => ({ time: c.time, value: (c.high + c.low + c.close) / 3 })), "wt2"),
     },
     {
-      id: "wtVwap",
-      label: "wtVwap",
+      id: "Vwap",
+      label: "Vwap",
       color: "#820000ff",
       priceScaleId: "right",
       calculateFn: (data) =>
         calculateWaveTrend(data.map((c) => ({ time: c.time, value: (c.high + c.low + c.close) / 3 })), "wtVwap"),
-    }
-  ];
-
-  const series3 = [
-    {
-      id: "RSI14",
-      label: "RSI14",
-      color: "#df1212ff",
-      priceScaleId: "left",
-      calculateFn: (data) => calculateRSI(data.map((c) => ({ time: c.time, value: c.close })), 14),
     },
-
+        {
+      id: "SMA11",
+      label: "SMA11",
+      color: "#2600ffff",
+      priceScaleId: "left",
+      calculateFn: (data) => calculateRSIwithSMA(data.map((c) => ({ time: c.time, value: c.close })), "sma"),
+    },
+    {
+      id: "SMA100",
+      label: "SMA100",
+      color: "#e914bbff",
+      priceScaleId: "left",
+      calculateFn: (data) => calculateRSIwithSMA(data.map((c) => ({ time: c.time, value: c.close })), "sma", 100),
+    },
   ];
+
 
 
 
@@ -285,15 +289,6 @@ function App() {
           candels={false}
           onChartReady={handleChartReady}
           SERIES={series2}
-          onHoverTime={(time) => setHover(time)}
-        />
-        <MyChart
-          hoverTime={hover}
-          setIndicators={setIndicators}
-          candleData={candles}
-          candels={false}
-          onChartReady={handleChartReady}
-          SERIES={series3}
           onHoverTime={(time) => setHover(time)}
         />
       </div>

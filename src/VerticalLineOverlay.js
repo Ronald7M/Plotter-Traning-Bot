@@ -17,7 +17,6 @@ export default function VerticalLineOverlay({ chart, hoverTime,ref }) {
     };
 
     updateLine();
-    console.log(getCanvasWidth(ref, 0, 0))
 
   }, [chart, hoverTime]);
 
