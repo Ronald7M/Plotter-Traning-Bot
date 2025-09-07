@@ -7,16 +7,17 @@ on:
   pull_request:
     branches:
       - main
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
+     
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # 2️⃣ Deploy pe server via SSH
+     
       - name: Deploy on Server via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -25,8 +26,10 @@ jobs:
           password: ${{ secrets.SERVER_PASS }}
           script: |
             cd ~/repos/plotter
-            git reset --hard
+            git fetch --all
+            git reset --hard origin/main
             git clean -fd
-            git pull origin main
             docker compose down
-            docker compose up --build -d
+            docker compose build --no-cache
+            docker compose up -d
+            docker image prune -f
