@@ -13,10 +13,8 @@ code {
 }
 
 .chart-container {
-  padding-left: 20vh;
-  display: flex;
-  flex-direction: column; 
-  gap: 20px; 
+  padding-left: 10vh;
+
 }
 
 .checkbox-label {
