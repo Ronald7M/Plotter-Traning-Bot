@@ -1,4 +1,4 @@
-import { RSI,EMA,MACD,SMA } from "technicalindicators";
+import { RSI, EMA, MACD, SMA } from "technicalindicators";
 
 
 export function combineVectors(v1, v2, op) {
@@ -20,7 +20,7 @@ export function combineVectors(v1, v2, op) {
     }
   }
 
-  return result;
+  return result;
 }
 
 export function calculateEMA(data, period = 9) {
@@ -30,15 +30,15 @@ export function calculateEMA(data, period = 9) {
 
   const emaValues = EMA.calculate({ values, period });
 
-  const result=emaValues.map((val, i) => ({
-    time: data[i + period - 1].time, 
+  const result = emaValues.map((val, i) => ({
+    time: data[i + period - 1].time,
     value: val,
   }));
-  return  result;
+  return result;
 }
 
 export function calculateRSI(data, period = 14) {
-    if (!data || data.length < period + 1) return [];
+  if (!data || data.length < period + 1) return [];
 
   const values = data.map(d => d.value);
 
@@ -50,14 +50,14 @@ export function calculateRSI(data, period = 14) {
   const gains = deltas.map(d => (d > 0 ? d : 0));
   const losses = deltas.map(d => (d < 0 ? -d : 0));
 
-  // Calculul primelor avgGain și avgLoss (media simplă pe prima perioadă)
+
   let avgGain = gains.slice(0, period).reduce((a, b) => a + b, 0) / period;
   let avgLoss = losses.slice(0, period).reduce((a, b) => a + b, 0) / period;
 
   const rsi = [];
 
   for (let i = period; i < gains.length; i++) {
-    // Wilder smoothing
+
     avgGain = (avgGain * (period - 1) + gains[i]) / period;
     avgLoss = (avgLoss * (period - 1) + losses[i]) / period;
 
@@ -65,7 +65,7 @@ export function calculateRSI(data, period = 14) {
     const rsiVal = 100 - 100 / (1 + rs);
 
     rsi.push({
-      time: data[i + 1].time, // +1 pentru că deltas începe de la index 1
+      time: data[i + 1].time,
       value: rsiVal,
     });
   }
@@ -78,7 +78,7 @@ export function calculateSMA(data, period = 9) {
 
   const values = data.map(d => d.value);
 
-  const smaValues = []; 
+  const smaValues = [];
 
 
   for (let i = 0; i <= values.length - period; i++) {
@@ -90,7 +90,7 @@ export function calculateSMA(data, period = 9) {
 
 
   const result = smaValues.map((val, i) => ({
-    time: data[i + period - 1].time, 
+    time: data[i + period - 1].time,
     value: val,
   }));
 
@@ -109,7 +109,7 @@ export function calculateSMMA(data, period = 200) {
 
   closes.forEach((close, i) => {
     if (i < period - 1) {
-      smmaValues.push(null); 
+      smmaValues.push(null);
     } else if (i === period - 1) {
       const sum = closes.slice(0, period).reduce((a, b) => a + b, 0);
       prevSmma = sum / period;
@@ -124,12 +124,12 @@ export function calculateSMMA(data, period = 200) {
     .map((val, i) =>
       val
         ? {
-            time: data[i].time,
-            value: val,
-          }
+          time: data[i].time,
+          value: val,
+        }
         : null
     )
-    .filter(Boolean); 
+    .filter(Boolean);
 }
 
 
@@ -149,39 +149,117 @@ export function calculateMACD(data, fastPeriod = 5, slowPeriod = 8, signalPeriod
     SimpleMASignal: false,
   });
 
-  const result=macdValues.map((val, i) => ({
-    time: data[i + slowPeriod - 1].time, 
+  const result = macdValues.map((val, i) => ({
+    time: data[i + slowPeriod - 1].time,
     value: val.histogram,
   }));
 
   return result;
 }
 
-export function calculateVMC(data){
-  
+export function calculateVMC(data) {
+
 
 }
 
-export function calculateWaveTrend(src,type) {
+export function calculateWaveTrend(src, type) {
 
-  
-  const esa=calculateEMA(src,9)
- const de=calculateEMA(combineVectors(src,esa,(a,b)=>Math.abs(a-b)))
- const ciI=combineVectors(src,esa,(a,b)=>a-b);
- const ci=combineVectors(ciI,de,(a,b)=>a/(0.015*b));
 
- const wt1=calculateEMA(ci,12)
- const wt2=calculateSMA(wt1,3)
- const wtVwap=combineVectors(wt1,wt2,(a,b)=>a-b)
+  const esa = calculateEMA(src, 9)
+  const de = calculateEMA(combineVectors(src, esa, (a, b) => Math.abs(a - b)))
+  const ciI = combineVectors(src, esa, (a, b) => a - b);
+  const ci = combineVectors(ciI, de, (a, b) => a / (0.015 * b));
 
- if(type==="wt1"){
-  return wt1
- }
-  if(type==="wt2"){
-  return wt2
- }
+  const wt1 = calculateEMA(ci, 12)
+  const wt2 = calculateSMA(wt1, 3)
+  const wtVwap = combineVectors(wt1, wt2, (a, b) => a - b)
+
+  if (type === "wt1") {
+    return wt1
+  }
+  if (type === "wt2") {
+    return wt2
+  }
 
   return wtVwap;
+}
+
+
+
+// Funcția principală
+export function calculateRSIwithSMA(data,type,rsiLength = 9, maLength = 11) {
+  if (!data || data.length <= rsiLength) return [];
+
+  const values = data.map(d => d.value);
+
+  // calculează schimbările
+  const changes = values.map((v, i) => (i === 0 ? 0 : v - values[i - 1]));
+
+  // gains și losses
+  const gains = changes.map(ch => (ch > 0 ? ch : 0));
+  const losses = changes.map(ch => (ch < 0 ? -ch : 0));
+
+  // RMA pe gains și losses
+  const avgGains = rma(gains, rsiLength);
+  const avgLosses = rma(losses, rsiLength);
+
+  // RSI clasic
+  const rsi = avgGains.map((gain, i) => {
+    const loss = avgLosses[i];
+    if (i < rsiLength - 1) return null; // prea devreme
+    if (loss === 0) return 100;
+    if (gain === 0) return 0;
+    return 100 - 100 / (1 + gain / loss);
+  });
+
+  // SMA peste RSI
+  const rsiSma = sma(rsi.map(v => (v === null ? 0 : v)), maLength);
+
+  // output {time, value}
+  const output = data.map((d, i) => ({
+    time: d.time,
+    value: type === "rsi" ? rsi[i] : rsiSma[i]
+  }));
+  const cleaned = output.filter(a => a.value !== null);
+  console.log(cleaned)
+  return cleaned;
+}
+
+
+function rma(values, length) {
+  const result = [];
+  let sum = 0;
+
+  // calcul medie inițială simplă
+  for (let i = 0; i < length; i++) {
+    sum += values[i];
+  }
+  let prevRma = sum / length;
+  result[length - 1] = prevRma;
+
+  // aplica formula Wilder: rma = (prevRma * (len - 1) + value) / len
+  for (let i = length; i < values.length; i++) {
+    const rmaVal = (prevRma * (length - 1) + values[i]) / length;
+    result[i] = rmaVal;
+    prevRma = rmaVal;
+  }
+
+  return result;
+}
+
+// SMA clasic
+function sma(values, length) {
+  const result = [];
+  for (let i = 0; i < values.length; i++) {
+    if (i < length - 1) {
+      result.push(null); // insuficiente valori
+      continue;
+    }
+    const slice = values.slice(i - length + 1, i + 1);
+    const avg = slice.reduce((a, b) => a + b, 0) / length;
+    result.push(avg);
+  }
+  return result;
 }
 
 

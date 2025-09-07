@@ -83,11 +83,12 @@ export default function MyChart({ hoverTime, setIndicators, candleData, candels 
     if (candels === true) {
       setIndicators(prev => ({
         ...prev,
-        O: { data: candleData.map(c => ({ time: c.time, value: c.open })), color: "blue" },
-        H: { data: candleData.map(c => ({ time: c.time, value: c.high })), color: "green" },
-        L: { data: candleData.map(c => ({ time: c.time, value: c.low })), color: "red" },
-        C: { data: candleData.map(c => ({ time: c.time, value: c.close })), color: "black" },
-        V: { data: candleData.map(c => ({ time: c.time, value: c.volume })), color: "orange" },
+        O: { data: candleData.map(c => ({ time: c.time, value: c.open })), color: "#000000ff" },
+        H: { data: candleData.map(c => ({ time: c.time, value: c.high })), color: "#000000ff" },
+        L: { data: candleData.map(c => ({ time: c.time, value: c.low })), color: "#000000ff" },
+        C: { data: candleData.map(c => ({ time: c.time, value: c.close })), color: "#000000ff" },
+        V: { data: candleData.map(c => ({ time: c.time, value: c.volume })), color: "#8a8a8aff" },
+        TV: { data: candleData.map(c => ({ time: c.time, value: c.turnover })), color: "#8a8a8aff" },
       }));
     }
 
