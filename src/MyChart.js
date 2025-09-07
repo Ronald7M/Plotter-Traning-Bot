@@ -151,23 +151,55 @@ export default function MyChart({ hoverTime, setIndicators, candleData, candels 
 
 
   return (
-    <div className="chart-container" style={{ }}>
-      {/* Checkbox-uri */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginBottom: "12px" }}>
-        {seriesList.map((s) => (
-          <label key={s.id} style={{ color: s.color }} className="flex items-center gap-2">
-            <input type="checkbox" checked={s.show} onChange={() => toggleSeries(s.id)} />
-            {s.label}
-          </label>
-        ))}
-      </div>
+    <div
+  className="chart-container"
+  style={{
+    display: "flex",      // pentru layout pe orizontală
+    alignItems: "flex-start",
+    gap: "24px",          // spațiu între checkbox-uri și chart
+  }}
+>
+  {/* Checkbox-uri pe verticală */}
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: "12px",
+      minWidth: "150px", // lățime fixă sau adaptabilă
+    }}
+  >
+    {seriesList.map((s) => (
+      <label
+        key={s.id}
+        style={{ color: s.color }}
+        className="flex items-center gap-2"
+      >
+        <input
+          type="checkbox"
+          checked={s.show}
+          onChange={() => toggleSeries(s.id)}
+        />
+        {s.label}
+      </label>
+    ))}
+  </div>
 
-
-
-      <div ref={containerRef} style={{   position: "relative" ,width: "100%", height: "400px" }} >
-        <VerticalLineOverlay chart={chart} hoverTime={hoverTime} candleData={candleData} />
-      </div>
-
-    </div>
+  {/* Chart-ul */}
+  <div
+    ref={containerRef}
+    style={{
+      position: "relative",
+      width: "100%",    // ocupă restul spațiului
+      height: "400px",
+    }}
+  >
+    <VerticalLineOverlay
+      chart={chart}
+      hoverTime={hoverTime}
+      candleData={candleData}
+      ref={containerRef}
+    />
+  </div>
+</div>
   );
 }

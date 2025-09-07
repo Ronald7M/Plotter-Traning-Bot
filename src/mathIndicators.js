@@ -37,6 +37,42 @@ export function calculateEMA(data, period = 9) {
   return  result;
 }
 
+export function calculateRSI(data, period = 14) {
+    if (!data || data.length < period + 1) return [];
+
+  const values = data.map(d => d.value);
+
+  const deltas = [];
+  for (let i = 1; i < values.length; i++) {
+    deltas.push(values[i] - values[i - 1]);
+  }
+
+  const gains = deltas.map(d => (d > 0 ? d : 0));
+  const losses = deltas.map(d => (d < 0 ? -d : 0));
+
+  // Calculul primelor avgGain și avgLoss (media simplă pe prima perioadă)
+  let avgGain = gains.slice(0, period).reduce((a, b) => a + b, 0) / period;
+  let avgLoss = losses.slice(0, period).reduce((a, b) => a + b, 0) / period;
+
+  const rsi = [];
+
+  for (let i = period; i < gains.length; i++) {
+    // Wilder smoothing
+    avgGain = (avgGain * (period - 1) + gains[i]) / period;
+    avgLoss = (avgLoss * (period - 1) + losses[i]) / period;
+
+    const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+    const rsiVal = 100 - 100 / (1 + rs);
+
+    rsi.push({
+      time: data[i + 1].time, // +1 pentru că deltas începe de la index 1
+      value: rsiVal,
+    });
+  }
+
+  return rsi;
+}
+
 export function calculateSMA(data, period = 9) {
   if (!data || data.length < period) return [];
 
