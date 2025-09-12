@@ -1,27 +1,58 @@
 import { RSI, EMA, MACD, SMA } from "technicalindicators";
+import * as vec from "./vectors"
+
+export function calculateAll(candles, strategy) {
+  if (!candles || candles.length === 0) return {};
+
+  const closeSeries = candles.map((c) => ({ time: c.time, value: c.close }));
+  const openSeries = candles.map((c) => ({ time: c.time, value: c.open }));
+  const lowSeries = candles.map((c) => ({ time: c.time, value: c.low }));
+  const hlc3Series = candles.map((c) => ({
+    time: c.time,
+    value: (c.high + c.low + c.close) / 3,
+  }));
 
 
-export function combineVectors(v1, v2, op) {
-  let i = 0, j = 0;
-  let result = [];
+  const WT2 = calculateWaveTrend(hlc3Series, "wt2");
+  const WT2_S0_LC = calculateWTS0CloseOpen(closeSeries, openSeries, WT2);
+  const WT2_S0_LL = calculateWTS0(lowSeries, WT2);
+  var indicators = {
+    EMA9: calculateEMA(closeSeries, 9),
+    SMMA200: calculateSMMA(closeSeries, 180),
+    RSI14: calculateRSI(closeSeries, 14),
+    MACD: calculateMACD(closeSeries, 5, 8, 7),
+    WT1: calculateWaveTrend(hlc3Series, "wt1"),
+    WT2: WT2,
+    WTVwap: calculateWaveTrend(hlc3Series, "wtVwap"),
+    SMA11: calculateRSIwithSMA(closeSeries, "sma"),
+    SMA100: calculateRSIwithSMA(closeSeries, "sma", 100),
+    WT2_S0_LC,
+    PREV_WT2_S0_LC: calculateWTS0Prev(WT2_S0_LC),
+    WT2_S0_LL,
+    PREV_WT2_S0_LL: calculateWTS0Prev(WT2_S0_LL),
 
-  while (i < v1.length && j < v2.length) {
-    if (v1[i].time === v2[j].time) {
-      result.push({
-        time: v1[i].time,
-        value: op(v1[i].value, v2[j].value)
-      });
-      i++;
-      j++;
-    } else if (v1[i].time < v2[j].time) {
-      i++;
-    } else {
-      j++;
-    }
+    WT2_S0_C1: calculateWTS0(openSeries, WT2),
+    debug: calculateDebug(closeSeries, WT2)
   }
 
-  return result;
+  const strategyResult = strategy ? strategy.strategy(candles, indicators,) : null;
+
+  indicators = {
+    ...indicators,
+
+  }
+
+
+
+  return {
+    ...indicators,
+    ...strategyResult,
+
+  };
 }
+
+
+
 
 export function calculateEMA(data, period = 9) {
   if (!data || data.length < period) return [];
@@ -166,13 +197,13 @@ export function calculateWaveTrend(src, type) {
 
 
   const esa = calculateEMA(src, 9)
-  const de = calculateEMA(combineVectors(src, esa, (a, b) => Math.abs(a - b)))
-  const ciI = combineVectors(src, esa, (a, b) => a - b);
-  const ci = combineVectors(ciI, de, (a, b) => a / (0.015 * b));
+  const de = calculateEMA(vec.combine(src, esa, (a, b) => Math.abs(a - b)))
+  const ciI = vec.combine(src, esa, (a, b) => a - b);
+  const ci = vec.combine(ciI, de, (a, b) => a / (0.015 * b));
 
   const wt1 = calculateEMA(ci, 12)
   const wt2 = calculateSMA(wt1, 3)
-  const wtVwap = combineVectors(wt1, wt2, (a, b) => a - b)
+  const wtVwap = vec.combine(wt1, wt2, (a, b) => a - b)
 
   if (type === "wt1") {
     return wt1
@@ -187,7 +218,7 @@ export function calculateWaveTrend(src, type) {
 
 
 // Funcția principală
-export function calculateRSIwithSMA(data,type,rsiLength = 9, maLength = 11) {
+export function calculateRSIwithSMA(data, type, rsiLength = 9, maLength = 11) {
   if (!data || data.length <= rsiLength) return [];
 
   const values = data.map(d => d.value);
@@ -221,7 +252,6 @@ export function calculateRSIwithSMA(data,type,rsiLength = 9, maLength = 11) {
     value: type === "rsi" ? rsi[i] : rsiSma[i]
   }));
   const cleaned = output.filter(a => a.value !== null);
-  console.log(cleaned)
   return cleaned;
 }
 
@@ -261,6 +291,100 @@ function sma(values, length) {
   }
   return result;
 }
+
+
+/////---
+
+function calculateWTS0(src, wt2) {
+  const offset = 5
+
+  function getMin(arr, offset) {
+    var minCurrent = arr[0].value;
+    const result = [];
+    for (let i = 0; i < arr.length; i++) {
+      minCurrent = Math.min(minCurrent, arr[i].value);
+      result.push({ ...arr[i], value: minCurrent });
+    }
+
+    return result.slice(offset);
+  }
+  var intervalsSRC = vec.findIntervals(wt2, offset, (v) => v < 0)
+  intervalsSRC = intervalsSRC.map(i => {
+    const res = vec.moveValue(i, src)
+    return res
+  })
+
+  const intervalMin = intervalsSRC.map(i => getMin(i, offset)).flat()
+  return vec.fillMissingPoints(src, intervalMin, 0)
+
+
+}
+function calculateWTS0CloseOpen(srcClose, srcOpen, wt2) {
+  const s0close = calculateWTS0(srcClose, wt2)
+  const s0open = calculateWTS0(srcOpen, wt2)
+
+  const result = vec.combine(s0close, s0open, (a, b) => Math.min(a, b))
+  return result
+
+}
+
+
+export function calculateHH(src, intervals) {
+  const mapIntervals = vec.mapIntervals(intervals, (int) => {
+    var max = 0;
+    const result = int.map(i => {
+      var index = vec.findIndex(src,i.time)
+      if (src[index].value > max) {
+        max = src[index].value
+      }
+
+
+
+      return { ...i, value: max }
+    })
+    return result
+  })
+
+  const res = vec.fillMissingPoints(src, mapIntervals.flat(), 0)
+  return res
+
+}
+
+
+function calculateWTS0Prev(wt2S0) {
+  const crosses = vec.findCrosses(wt2S0, 1, "down", 1);
+  const result = [];
+
+  for (let i = 0; i < crosses.length; i++) {
+    const idx = crosses[i].index - 1;
+    if (idx >= 0) {
+      result.push({
+        time: crosses[i].time,
+        value: wt2S0[idx].value
+      });
+    }
+  }
+
+
+  return vec.fillMissingPoints(wt2S0, result);
+}
+
+export function calculateDebug(src, wt2) {
+  const wt2DownCrosses = vec.findCrosses(wt2, 0, "up", -1)
+  const wt2UPCrosses = vec.findCrosses(wt2, 0, "down", 1)
+  const wt2joinCroses = vec.sortAndMerge(wt2DownCrosses, wt2UPCrosses)
+
+
+
+
+  return vec.fillMissingPoints(src, wt2joinCroses)
+
+}
+
+
+
+
+
 
 
 
